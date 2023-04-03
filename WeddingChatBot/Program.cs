@@ -12,6 +12,11 @@ using System.Collections.Generic;
 using WeddingChatBot.DataModel;
 using System.Data.Entity.Migrations;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using Telegram.Bot.Types.Enums;
+using WeddingChatBot;
+using Telegram.Bot.Types.InputFiles;
+using System.IO;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TelegramBotExperiments
 {
@@ -19,125 +24,103 @@ namespace TelegramBotExperiments
     {
         public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
+            if (update.Type == UpdateType.Message)
             {
                 var message = update.Message;
-                using (ChatUsersContext chatUsers = new ChatUsersContext())
+                if (!string.IsNullOrWhiteSpace(message.Text))
                 {
-                    if (message.Text.ToLower() == "/start")
+                    using (ChatUsersContext chatUsers = new ChatUsersContext())
                     {
-                        Users users;
-                        if (chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).Count() == 0)
+                        if (message.Text.ToLower() == "/start")
                         {
-                            users = new Users
+                            Console.WriteLine($"{message.From.FirstName} {message.From.LastName}: {message.Text}; {message.Date}");
+                            Users users;
+                            if (chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).Count() == 0)
                             {
-                                TelegramCode = message.From.Id,
-                                Name = message.From.FirstName,
-                                Surname = message.From.LastName,
-                                IdChatPosition = "start"
-                            };
+                                users = new Users
+                                {
+                                    TelegramCode = message.From.Id,
+                                    Name = message.From.FirstName,
+                                    Surname = message.From.LastName,
+                                    IdChatPosition = "start"
+                                };
+                            }
+                            else
+                            {
+                                users = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
+                                users.IdChatPosition = "start";
+                            }
+                            chatUsers.GetUsers.AddOrUpdate(users);
+                            chatUsers.SaveChanges();
                         }
-                        else
-                        {
-                            users = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
-                            users.IdChatPosition = "start";
-                        }
-                        chatUsers.GetUsers.AddOrUpdate(users);
-                        chatUsers.SaveChanges();
-                    }
-                    var user = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
+                        var user = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
 
-                    await Task.Run(() => { BotAnswer(update, botClient, chatUsers, user); });
+                        await Task.Run(() => { BotAnswer(message, botClient, chatUsers, user); });
+                    }
                 }
             }
         }
-        public static void BotAnswer(Update update, ITelegramBotClient botClient, ChatUsersContext chatUsers, Users user)
+        public static void BotAnswer(Message message, ITelegramBotClient botClient, ChatUsersContext chatUsers, Users user)
         {
-            var message = update.Message;
-            Console.WriteLine($"{message.From.FirstName} {message.From.LastName}: {message.Text}; {message.Date}");
-            if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
+            botClient.SendChatActionAsync(message.Chat, ChatAction.Typing);
+            MessageTexts messageTexts = new MessageTexts(user.IdChatPosition, message);
+            botClient.SendTextMessageAsync(message.Chat, messageTexts.Text, replyMarkup: messageTexts.Keyboard);
+            AnswerKey chatAnswer = Answer.GetAnswerKey(message.Text);
+
+            if (user.IdChatPosition == "start")
             {
-                if (user.IdChatPosition == "start")
+                user.IdChatPosition = "responsetoinvite";
+            }
+            else if (user.IdChatPosition == "responsetoinvite")
+            {
+                if (chatAnswer == AnswerKey.Yes || chatAnswer == AnswerKey.MayBe)
                 {
-                    IEnumerable<KeyboardButton> keyboardButtons = new List<KeyboardButton>()
-                    {
-                        new KeyboardButton("Точно да!"),
-                        new KeyboardButton("Да кому вы нужны!"),
-                        new KeyboardButton("Ну посмотрим...")
-                    };
-                    var rkm = new ReplyKeyboardMarkup(keyboardButtons);
-                    botClient.SendTextMessageAsync(message.Chat,
-                        "Привет!\n\nПриглашаем Вас на нашу свадьбу 09.06.2023!!!\n\nВсё будет происходить в ресторане метелица!\n\nВы идете?",
-                        replyMarkup: rkm);
-                    user.IdChatPosition = "responsetoinvite";
+                    user.Choice = chatAnswer == AnswerKey.Yes ? "Согласен" : "Подумаю";
+                    user.IdChatPosition = "otherpeople";
                 }
-                else if (user.IdChatPosition == "responsetoinvite")
+                else if (chatAnswer == AnswerKey.No)
                 {
-                    if (message.Text == "Точно да!")
-                    {
-                        IEnumerable<KeyboardButton> keyboardButtons = new List<KeyboardButton>()
-                        {
-                            new KeyboardButton("Да"),
-                            new KeyboardButton("Нет"),
-                        };
-                        var rkm = new ReplyKeyboardMarkup(keyboardButtons);
-                        botClient.SendTextMessageAsync(message.Chat, "Запишу Ваш выбор карандашом! Будете один?", replyMarkup: rkm);
-                        user.Choice = "Согласен";
-                        user.IdChatPosition = "otherpeople";
-                    }
-                    else if (message.Text == "Да кому вы нужны!")
-                    {
-                        botClient.SendTextMessageAsync(message.Chat, "Это еще почему?", replyMarkup: new ReplyKeyboardRemove());
-                        user.Choice = "Не согласен";
-                        user.Alcohol = user.PeopleGoTogether = null;
-                        user.IdChatPosition = "waitreason";
-                    }
+                    user.Choice = "Не согласен";
+                    user.IdChatPosition = "waitreason";
                 }
-                else if (user.IdChatPosition == "otherpeople")
+            }
+            else if (user.IdChatPosition == "otherpeople")
+            {
+                if (chatAnswer == AnswerKey.Yes)
                 {
-                    if (message.Text == "Да")
-                    {
-                        botClient.SendTextMessageAsync(message.Chat, "Понял, что хотели бы выпивать?", replyMarkup: new ReplyKeyboardRemove());
-                        user.IdChatPosition = "selectalcohol";
-                    }
-                    else if (message.Text == "Нет")
-                    {
-                        botClient.SendTextMessageAsync(message.Chat, "Напишите имена и фамилии с кем вы будете через запятую.", replyMarkup: new ReplyKeyboardRemove());
-                        user.IdChatPosition = "writeotherpeople";
-                    }
-                }
-                else if (user.IdChatPosition == "waitreason")
-                {
-                    botClient.SendTextMessageAsync(message.Chat, "Я конечно записал ваш ответ, но даю всё-таки минуту подумать. Меня можно перезагрузить и заполнить еще раз...", replyMarkup: new ReplyKeyboardRemove());
-                    user.IdChatPosition = "end";
-                }
-                else if (user.IdChatPosition == "selectalcohol")
-                {
-                    botClient.SendTextMessageAsync(message.Chat, "Ну всё записал! Ждем!", replyMarkup: new ReplyKeyboardRemove());
-                    user.Alcohol = message.Text;
-                    user.IdChatPosition = "end";
-                }
-                else if (user.IdChatPosition == "writeotherpeople")
-                {
-                    botClient.SendTextMessageAsync(message.Chat, "Всё четко.\nчто хотели бы выпивать?", replyMarkup: new ReplyKeyboardRemove());
-                    user.PeopleGoTogether = message.Text;
                     user.IdChatPosition = "selectalcohol";
                 }
-                else if (user.IdChatPosition == "end")
+                else if (chatAnswer == AnswerKey.No)
                 {
-                    botClient.SendTextMessageAsync(message.Chat, "Ваш ответ я заполнил. Если вы хотите поговорить, то я не тот ассистент", replyMarkup: new ReplyKeyboardRemove());
-                    user.IdChatPosition = "end";
+                    user.IdChatPosition = "writeotherpeople";
                 }
-                chatUsers.GetUsers.AddOrUpdate(user);
-                chatUsers.SaveChanges();
             }
+            else if (user.IdChatPosition == "waitreason")
+            {
+                user.IdChatPosition = "end";
+            }
+            else if (user.IdChatPosition == "selectalcohol")
+            {
+                user.Alcohol = message.Text;
+                user.IdChatPosition = "end";
+            }
+            else if (user.IdChatPosition == "writeotherpeople")
+            {
+                user.PeopleGoTogether = message.Text;
+                user.IdChatPosition = "selectalcohol";
+            }
+            else if (user.IdChatPosition == "end")
+            {
+                botClient.SendStickerAsync(message.Chat, new InputOnlineFile("CAACAgIAAxkBAAEICCdkBjw5uCHv7JPrVEYAAZHP4sxTgHUAAvcAA1advQoLciQdSPQNMC4E"));
+                user.IdChatPosition = "end";
+            }
+            chatUsers.GetUsers.AddOrUpdate(user);
+            chatUsers.SaveChanges();
         }
 
         public static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            // Некоторые действия
-            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(exception));
-            //await Task.Run(() => { Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(exception)); });
+            await Task.Run(() => { Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(exception)); });
         }
 
 
