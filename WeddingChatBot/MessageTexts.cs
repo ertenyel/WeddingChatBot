@@ -3,42 +3,8 @@ using Telegram.Bot.Types;
 
 namespace WeddingChatBot
 {
-    public class MessageTexts
+    public static class MessageTexts
     {
-        public MessageTexts(string idChatPosition, Message message)
-        {
-            if (idChatPosition == "start")
-            {
-                Start(message.From.FirstName);
-            }
-            else if (idChatPosition == "responsetoinvite")
-            {
-                ResponseToInvite(message.Text);
-            }
-            else if (idChatPosition == "otherpeople")
-            {
-                OtherPeople(message.Text);
-            }
-            else if (idChatPosition == "waitreason")
-            {
-                WaitReason();
-            }
-            else if (idChatPosition == "selectalcohol")
-            {
-                SelectAlcohol();
-            }
-            else if (idChatPosition == "writeotherpeople")
-            {
-                WriteOtherPeople();
-            }
-            else if (idChatPosition == "end")
-            {
-                End();
-            }
-        }
-        public string Text { get; set; }
-        public IReplyMarkup Keyboard { get; set; }
-
         private void Start(string name)
         {
             Text = $"Привет, {name}!\n\nСпешим сообщить радостную новость - мы создаем семью!\nМы это те, что на первой фотке! Гляньте и другие фотографии тоже\nКороче! Приглашаем тебя разделить с нами радость этого долгожданного события!\n\nТы будешь?";

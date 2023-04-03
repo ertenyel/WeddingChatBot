@@ -6,26 +6,41 @@ namespace WeddingChatBot
 {
     public static class Buttons
     {
-        public static ReplyKeyboardMarkup YesNoOrMayBe()
+        public static ReplyKeyboardMarkup MainButtons 
+        { 
+            get => new ReplyKeyboardMarkup(new List<KeyboardButton>()
         {
-            return new ReplyKeyboardMarkup(new List<KeyboardButton>()
-                                           {
-                                               new KeyboardButton(Answer.GetAnswerText(AnswerKey.Yes)),
-                                               new KeyboardButton(Answer.GetAnswerText(AnswerKey.No)),
-                                               new KeyboardButton(Answer.GetAnswerText(AnswerKey.MayBe))
-                                           });
+            new KeyboardButton(MainMenuButtons.InfoButton),
+            new KeyboardButton(MainMenuButtons.UserInfoButton)
+        });
         }
-        public static ReplyKeyboardMarkup YesOrNo()
+        public static ReplyKeyboardMarkup InfoButtons
         {
-            return new ReplyKeyboardMarkup(new List<KeyboardButton>()
-                                           {
-                                               new KeyboardButton(Answer.GetAnswerText(AnswerKey.Yes)),
-                                               new KeyboardButton(Answer.GetAnswerText(AnswerKey.No)),
-                                           });
+            get => new ReplyKeyboardMarkup(new List<KeyboardButton>()
+        {
+            new KeyboardButton(InfoEventButtons.InfoAboutNewlyweds),
+            new KeyboardButton(InfoEventButtons.EventPlan),
+            new KeyboardButton(InfoEventButtons.Locations),
+            new KeyboardButton(InfoEventButtons.ColorClothing)
+        });
         }
-        public static AnswerKey GetUserChoice(string userAnswer)
+        public static ReplyKeyboardMarkup AboutUserButtons
         {
-           return Answer.GetAnswerKey(userAnswer);
+            get => new ReplyKeyboardMarkup(new List<KeyboardButton>()
+        {
+            new KeyboardButton(UserInfoButtons.Choice),
+            new KeyboardButton(UserInfoButtons.Companion),
+            new KeyboardButton(UserInfoButtons.Alcohol),
+            new KeyboardButton(UserInfoButtons.Food)
+        });
+        }
+        public static ReplyKeyboardMarkup OtherButton
+        {
+            get => new ReplyKeyboardMarkup(new List<KeyboardButton>()
+        {
+            new KeyboardButton(OtherButtons.Exit),
+            new KeyboardButton(OtherButtons.ExitToMenu)
+        });
         }
     }
 }

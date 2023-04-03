@@ -42,13 +42,13 @@ namespace TelegramBotExperiments
                                     TelegramCode = message.From.Id,
                                     Name = message.From.FirstName,
                                     Surname = message.From.LastName,
-                                    IdChatPosition = "start"
+                                    IdChatPosition = "main",
                                 };
                             }
                             else
                             {
                                 users = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
-                                users.IdChatPosition = "start";
+                                users.IdChatPosition = "main";
                             }
                             chatUsers.GetUsers.AddOrUpdate(users);
                             chatUsers.SaveChanges();
@@ -63,12 +63,54 @@ namespace TelegramBotExperiments
         public static void BotAnswer(Message message, ITelegramBotClient botClient, ChatUsersContext chatUsers, Users user)
         {
             botClient.SendChatActionAsync(message.Chat, ChatAction.Typing);
-            MessageTexts messageTexts = new MessageTexts(user.IdChatPosition, message);
-            botClient.SendTextMessageAsync(message.Chat, messageTexts.Text, replyMarkup: messageTexts.Keyboard);
-            AnswerKey chatAnswer = Answer.GetAnswerKey(message.Text);
 
-            if (user.IdChatPosition == "start")
+            if (idChatPosition == "main")
             {
+                Start(message.From.FirstName);
+            }
+            else if (idChatPosition == "infoevent")
+            {
+                ResponseToInvite(message.Text);
+            }
+            else if (idChatPosition == "infouser")
+            {
+                OtherPeople(message.Text);
+            }
+            else if (idChatPosition == "infonewlyweds")
+            {
+                WaitReason();
+            }
+            else if (idChatPosition == "infoeventplan")
+            {
+                SelectAlcohol();
+            }
+            else if (idChatPosition == "infolocations")
+            {
+                WriteOtherPeople();
+            }
+            else if (idChatPosition == "infocolor")
+            {
+                End();
+            }
+            else if (idChatPosition == "setchoice")
+            {
+                End();
+            }
+            else if (idChatPosition == "setcompanion")
+            {
+                End();
+            }
+            else if (idChatPosition == "setalcohol")
+            {
+                End();
+            }
+            else if (idChatPosition == "setfood")
+            {
+                End();
+            }
+            if (user.IdChatPosition == "main")
+            {
+                botClient.SendTextMessageAsync(message.Chat, messageTexts.Text, replyMarkup: messageTexts.Keyboard);
                 user.IdChatPosition = "responsetoinvite";
             }
             else if (user.IdChatPosition == "responsetoinvite")
