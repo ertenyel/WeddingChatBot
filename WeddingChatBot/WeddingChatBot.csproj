@@ -71,12 +71,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataModel\Button.cs" />
+    <Compile Include="DataModel\ChatPosition.cs" />
+    <Compile Include="DataModel\TextInMessage.cs" />
     <Compile Include="TextButtons\OtherButtons.cs" />
     <Compile Include="TextButtons\UserInfoButtons.cs" />
     <Compile Include="TextButtons\InfoEventButtons.cs" />
     <Compile Include="TextButtons\MainMenuButtons.cs" />
     <Compile Include="DataModel\ChatUsersContext.cs" />
-    <Compile Include="DataModel\Users.cs" />
+    <Compile Include="DataModel\User.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MessageTexts.cs" />
@@ -87,6 +90,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="InitialData.sql" />
     <Content Include="plan.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

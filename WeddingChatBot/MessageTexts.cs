@@ -4,10 +4,10 @@ using Telegram.Bot.Types;
 namespace WeddingChatBot
 {
     public static class MessageTexts
-    {
+    {  /*
         private void Start(string name)
         {
-            Text = $"Привет, {name}!\n\nСпешим сообщить радостную новость - мы создаем семью!\nМы это те, что на первой фотке! Гляньте и другие фотографии тоже\nКороче! Приглашаем тебя разделить с нами радость этого долгожданного события!\n\nТы будешь?";
+            Text = $"Привет!\n\nСпешим сообщить радостную новость - мы создаем семью!\nМы это те, что на первой фотке! Гляньте и другие фотографии тоже\nКороче! Приглашаем тебя разделить с нами радость этого долгожданного события!\n\nТы будешь?";
             Keyboard = Buttons.YesNoOrMayBe();
         }
         private void ResponseToInvite(string message)
@@ -56,6 +56,6 @@ namespace WeddingChatBot
         {
             Text = "Ваш ответ я записал. К сожалению, я не настолько крут, чтобы говорить еще о чём-то.\n Если хотите пройти ответы заново, то нажмите /start";
             Keyboard = new ReplyKeyboardRemove();
-        }
+        }  */
     }
 }

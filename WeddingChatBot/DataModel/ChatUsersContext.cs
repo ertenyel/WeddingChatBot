@@ -9,8 +9,12 @@ namespace WeddingChatBot.DataModel
         public ChatUsersContext()
             : base("name=ChatUsers")
         {
+            Database.CreateIfNotExists();
         }
 
-        public virtual DbSet<Users> GetUsers { get; set; }
+        public virtual DbSet<User> GetUsers { get; set; }
+        public virtual DbSet<ChatPosition> ChatPositions { get; set; }
+        public virtual DbSet<TextInMessage> TextsInMessage { get; set; }
+        public virtual DbSet<Button> Buttons { get; set; }
     }
 }

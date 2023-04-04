@@ -34,21 +34,20 @@ namespace TelegramBotExperiments
                         if (message.Text.ToLower() == "/start")
                         {
                             Console.WriteLine($"{message.From.FirstName} {message.From.LastName}: {message.Text}; {message.Date}");
-                            Users users;
+                            WeddingChatBot.DataModel.User users;
                             if (chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).Count() == 0)
                             {
-                                users = new Users
+                                users = new WeddingChatBot.DataModel.User
                                 {
                                     TelegramCode = message.From.Id,
                                     Name = message.From.FirstName,
-                                    Surname = message.From.LastName,
-                                    IdChatPosition = "main",
+                                    Surname = message.From.LastName
                                 };
                             }
                             else
                             {
                                 users = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
-                                users.IdChatPosition = "main";
+                                //users.IdChatPosition = "main";
                             }
                             chatUsers.GetUsers.AddOrUpdate(users);
                             chatUsers.SaveChanges();
@@ -60,8 +59,8 @@ namespace TelegramBotExperiments
                 }
             }
         }
-        public static void BotAnswer(Message message, ITelegramBotClient botClient, ChatUsersContext chatUsers, Users user)
-        {
+        public static void BotAnswer(Message message, ITelegramBotClient botClient, ChatUsersContext chatUsers, WeddingChatBot.DataModel.User user)
+        {  /*
             botClient.SendChatActionAsync(message.Chat, ChatAction.Typing);
 
             if (idChatPosition == "main")
@@ -157,7 +156,7 @@ namespace TelegramBotExperiments
                 user.IdChatPosition = "end";
             }
             chatUsers.GetUsers.AddOrUpdate(user);
-            chatUsers.SaveChanges();
+            chatUsers.SaveChanges();       */
         }
 
         public static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -168,6 +167,10 @@ namespace TelegramBotExperiments
 
         static void Main(string[] args)
         {
+            using (ChatUsersContext chatUsers = new ChatUsersContext())
+            {
+                chatUsers.GetUsers.Where(x => x.TelegramCode == 1).Count();
+            }
             TelegramBotClient bot = new TelegramBotClient("6119932961:AAFQ2-JsIOnAS7-khwx8Chhu8JolUiiYnnU");
             Console.WriteLine("Запущен бот " + bot.GetMeAsync().Result.FirstName);
 
