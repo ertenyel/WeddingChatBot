@@ -35,19 +35,22 @@ namespace TelegramBotExperiments
                         {
                             Console.WriteLine($"{message.From.FirstName} {message.From.LastName}: {message.Text}; {message.Date}");
                             WeddingChatBot.DataModel.User users;
+                            int mainPosId = chatUsers.GetChatPositions.Where(x => x.Name == "main").Select(x => x.Id).First();
+
                             if (chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).Count() == 0)
                             {
                                 users = new WeddingChatBot.DataModel.User
                                 {
                                     TelegramCode = message.From.Id,
                                     Name = message.From.FirstName,
-                                    Surname = message.From.LastName
+                                    Surname = message.From.LastName,
+                                    IdChatPosition = mainPosId
                                 };
                             }
                             else
                             {
                                 users = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
-                                //users.IdChatPosition = "main";
+                                users.IdChatPosition = mainPosId;
                             }
                             chatUsers.GetUsers.AddOrUpdate(users);
                             chatUsers.SaveChanges();
@@ -60,103 +63,30 @@ namespace TelegramBotExperiments
             }
         }
         public static void BotAnswer(Message message, ITelegramBotClient botClient, ChatUsersContext chatUsers, WeddingChatBot.DataModel.User user)
-        {  /*
-            botClient.SendChatActionAsync(message.Chat, ChatAction.Typing);
+        {
+            int? idMessage = chatUsers.GetChatPositions.Where(x => x.Id == user.IdChatPosition).Select(x => x.IdMessageText).First();
+            string messageText = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.Text).First();
+            int? idButtons = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.IdButtons).First();
+            List<string> buttons = chatUsers.GetButtons.Where(x => x.IdMessage == idButtons).Select(x => x.Text).ToList();
 
-            if (idChatPosition == "main")
+            IReplyMarkup replyKeyboardMarkups;
+            if (buttons.Count > 0)
             {
-                Start(message.From.FirstName);
+                List<KeyboardButton> keyboardButtons = new List<KeyboardButton>();
+
+                foreach (string button in buttons)
+                    keyboardButtons.Add(new KeyboardButton(button));
+
+                replyKeyboardMarkups = new ReplyKeyboardMarkup(keyboardButtons);
             }
-            else if (idChatPosition == "infoevent")
+            else
             {
-                ResponseToInvite(message.Text);
+                replyKeyboardMarkups = new ReplyKeyboardRemove();
             }
-            else if (idChatPosition == "infouser")
-            {
-                OtherPeople(message.Text);
-            }
-            else if (idChatPosition == "infonewlyweds")
-            {
-                WaitReason();
-            }
-            else if (idChatPosition == "infoeventplan")
-            {
-                SelectAlcohol();
-            }
-            else if (idChatPosition == "infolocations")
-            {
-                WriteOtherPeople();
-            }
-            else if (idChatPosition == "infocolor")
-            {
-                End();
-            }
-            else if (idChatPosition == "setchoice")
-            {
-                End();
-            }
-            else if (idChatPosition == "setcompanion")
-            {
-                End();
-            }
-            else if (idChatPosition == "setalcohol")
-            {
-                End();
-            }
-            else if (idChatPosition == "setfood")
-            {
-                End();
-            }
-            if (user.IdChatPosition == "main")
-            {
-                botClient.SendTextMessageAsync(message.Chat, messageTexts.Text, replyMarkup: messageTexts.Keyboard);
-                user.IdChatPosition = "responsetoinvite";
-            }
-            else if (user.IdChatPosition == "responsetoinvite")
-            {
-                if (chatAnswer == AnswerKey.Yes || chatAnswer == AnswerKey.MayBe)
-                {
-                    user.Choice = chatAnswer == AnswerKey.Yes ? "Согласен" : "Подумаю";
-                    user.IdChatPosition = "otherpeople";
-                }
-                else if (chatAnswer == AnswerKey.No)
-                {
-                    user.Choice = "Не согласен";
-                    user.IdChatPosition = "waitreason";
-                }
-            }
-            else if (user.IdChatPosition == "otherpeople")
-            {
-                if (chatAnswer == AnswerKey.Yes)
-                {
-                    user.IdChatPosition = "selectalcohol";
-                }
-                else if (chatAnswer == AnswerKey.No)
-                {
-                    user.IdChatPosition = "writeotherpeople";
-                }
-            }
-            else if (user.IdChatPosition == "waitreason")
-            {
-                user.IdChatPosition = "end";
-            }
-            else if (user.IdChatPosition == "selectalcohol")
-            {
-                user.Alcohol = message.Text;
-                user.IdChatPosition = "end";
-            }
-            else if (user.IdChatPosition == "writeotherpeople")
-            {
-                user.PeopleGoTogether = message.Text;
-                user.IdChatPosition = "selectalcohol";
-            }
-            else if (user.IdChatPosition == "end")
-            {
-                botClient.SendStickerAsync(message.Chat, new InputOnlineFile("CAACAgIAAxkBAAEICCdkBjw5uCHv7JPrVEYAAZHP4sxTgHUAAvcAA1advQoLciQdSPQNMC4E"));
-                user.IdChatPosition = "end";
-            }
+            botClient.SendTextMessageAsync(message.Chat, messageText, replyMarkup: replyKeyboardMarkups);
+
             chatUsers.GetUsers.AddOrUpdate(user);
-            chatUsers.SaveChanges();       */
+            chatUsers.SaveChanges();
         }
 
         public static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -167,10 +97,10 @@ namespace TelegramBotExperiments
 
         static void Main(string[] args)
         {
-            using (ChatUsersContext chatUsers = new ChatUsersContext())
-            {
-                chatUsers.GetUsers.Where(x => x.TelegramCode == 1).Count();
-            }
+            //using (ChatUsersContext chatUsers = new ChatUsersContext())
+            //{
+            //    chatUsers.GetUsers.Where(x => x.TelegramCode == 1).Count();
+            //}
             TelegramBotClient bot = new TelegramBotClient("6119932961:AAFQ2-JsIOnAS7-khwx8Chhu8JolUiiYnnU");
             Console.WriteLine("Запущен бот " + bot.GetMeAsync().Result.FirstName);
 

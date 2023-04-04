@@ -13,8 +13,8 @@ namespace WeddingChatBot.DataModel
         }
 
         public virtual DbSet<User> GetUsers { get; set; }
-        public virtual DbSet<ChatPosition> ChatPositions { get; set; }
-        public virtual DbSet<TextInMessage> TextsInMessage { get; set; }
-        public virtual DbSet<Button> Buttons { get; set; }
+        public virtual DbSet<ChatPosition> GetChatPositions { get; set; }
+        public virtual DbSet<TextInMessage> GetTextsInMessage { get; set; }
+        public virtual DbSet<Button> GetButtons { get; set; }
     }
 }
