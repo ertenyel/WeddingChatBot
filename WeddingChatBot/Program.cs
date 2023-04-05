@@ -31,30 +31,44 @@ namespace TelegramBotExperiments
                 {
                     using (ChatUsersContext chatUsers = new ChatUsersContext())
                     {
-                        if (message.Text.ToLower() == "/start")
-                        {
-                            Console.WriteLine($"{message.From.FirstName} {message.From.LastName}: {message.Text}; {message.Date}");
-                            WeddingChatBot.DataModel.User users;
-                            int mainPosId = chatUsers.GetChatPositions.Where(x => x.Name == "main").Select(x => x.Id).First();
+                        Console.WriteLine($"{message.From.FirstName} {message.From.LastName}: {message.Text}; {message.Date}");
+                        WeddingChatBot.DataModel.User users;
+                        int mainPosId = chatUsers.GetChatPositions.Where(x => x.Name == "main").Select(x => x.Id).First();
 
-                            if (chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).Count() == 0)
+                        if (chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).Count() == 0)
+                        {
+                            users = new WeddingChatBot.DataModel.User
                             {
-                                users = new WeddingChatBot.DataModel.User
+                                TelegramCode = message.From.Id,
+                                Name = message.From.FirstName,
+                                Surname = message.From.LastName,
+                                IdChatPosition = mainPosId
+                            };
+                        }
+                        else
+                        {
+                            users = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
+                            if (message.Text.ToLower() == "/start")
+                            {
+                                users.IdChatPosition = mainPosId;
+                            }
+                            else if (chatUsers.GetButtons.Where(x => x.Text == message.Text).Count() > 0)
+                            {
+                                int? newIdChatPosition = chatUsers.GetButtons.Where(x => x.Text == message.Text).Select(x => x.CalledChatPosition).First();
+                                if (newIdChatPosition != null)
                                 {
-                                    TelegramCode = message.From.Id,
-                                    Name = message.From.FirstName,
-                                    Surname = message.From.LastName,
-                                    IdChatPosition = mainPosId
-                                };
+                                    users.IdChatPosition = (int)newIdChatPosition;
+                                }
+                                //Сделать исключения с кнопками вернуться назад, вернуться в меню и кнопками для записи в таблицу. Исправить файл InitialData
                             }
                             else
                             {
-                                users = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
-                                users.IdChatPosition = mainPosId;
+                                return;
                             }
-                            chatUsers.GetUsers.AddOrUpdate(users);
-                            chatUsers.SaveChanges();
                         }
+
+                        chatUsers.GetUsers.AddOrUpdate(users);
+                        chatUsers.SaveChanges();
                         var user = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
 
                         await Task.Run(() => { BotAnswer(message, botClient, chatUsers, user); });
@@ -97,10 +111,10 @@ namespace TelegramBotExperiments
 
         static void Main(string[] args)
         {
-            //using (ChatUsersContext chatUsers = new ChatUsersContext())
-            //{
-            //    chatUsers.GetUsers.Where(x => x.TelegramCode == 1).Count();
-            //}
+            using (ChatUsersContext chatUsers = new ChatUsersContext())
+            {
+                chatUsers.GetUsers.Where(x => x.TelegramCode == 1).Count();
+            }
             TelegramBotClient bot = new TelegramBotClient("6119932961:AAFQ2-JsIOnAS7-khwx8Chhu8JolUiiYnnU");
             Console.WriteLine("Запущен бот " + bot.GetMeAsync().Result.FirstName);
 

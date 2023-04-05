@@ -19,6 +19,7 @@ namespace WeddingChatBot.DataModel
         public double? FirstLongitude { get; set; }
         public double? SecondLatitude { get; set; }
         public double? SecondLongitude { get; set; }
+        public int IdChatPosition { get; set; }
         public int? IdButtons { get; set; }
     }
 }

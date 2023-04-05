@@ -16,18 +16,18 @@ END
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM TextInMessages)
 BEGIN
-	INSERT INTO TextInMessages ([Text] , [ImageUrl], [VideoUrl], [StickerId], [FirstLatitude], [FirstLongitude], [SecondLatitude], [SecondLongitude], [IdButtons])
-	VALUES ('Выбирай пункты меню и узнай всё о мероприятии!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
-		   ('В этом меню ты можешь узнать все подробности о нашем событии!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2),
-		   ('В этом меню ты можешь рассказать о себе!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3),
-		   ('Мы Марина и Кирилл!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7),
-		   ('Сначала ЗАГС потом фотки, потом банкет!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7),
-		   ('Все места мероприятия находятся здесь!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7),
-		   ('Основной цвет свадьбы изумрудный!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7),
-		   ('Вы придете к нам?', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 4),
-		   ('Укажите имя Вашей второй половинки!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7),
-		   ('Укажите предпочтения в алкоголе', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 5),
-		   ('Укажите предпочтения в еде', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 6)
+	INSERT INTO TextInMessages ([Text] , [ImageUrl], [VideoUrl], [StickerId], [FirstLatitude], [FirstLongitude], [SecondLatitude], [SecondLongitude], [IdChatPosition], [IdButtons])
+	VALUES ('Выбирай пункты меню и узнай всё о мероприятии!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1,  1),
+		   ('В этом меню ты можешь узнать все подробности о нашем событии!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2, 2),
+		   ('В этом меню ты можешь рассказать о себе!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3, 3),
+		   ('Мы Марина и Кирилл!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 4, 7),
+		   ('Сначала ЗАГС потом фотки, потом банкет!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 5, 7),
+		   ('Все места мероприятия находятся здесь!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 6, 7),
+		   ('Основной цвет свадьбы изумрудный!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7, 7),
+		   ('Вы придете к нам?', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 8, 4),
+		   ('Укажите имя Вашей второй половинки!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 9, 7),
+		   ('Укажите предпочтения в алкоголе', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 10, 5),
+		   ('Укажите предпочтения в еде', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 11, 6)
 END
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Buttons)

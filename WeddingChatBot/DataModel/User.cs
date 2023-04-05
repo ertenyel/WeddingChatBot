@@ -14,6 +14,7 @@ namespace WeddingChatBot.DataModel
         public string Companion { get; set; }
         public string Alcohol { get; set; }
         public string Food { get; set; }
+        public int? ButtonWasPressed { get; set; }
         public int IdChatPosition { get; set; }
     }
 }

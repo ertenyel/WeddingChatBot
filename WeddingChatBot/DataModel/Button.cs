@@ -9,5 +9,6 @@ namespace WeddingChatBot.DataModel
         public string Text { get; set; }
         public int? IdMessage { get; set; }
         public int? ButtonType { get; set; }
+        public int? CalledChatPosition { get; set; }
     }
 }
