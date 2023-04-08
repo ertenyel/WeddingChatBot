@@ -22,7 +22,7 @@ namespace TelegramBotExperiments
             {
                 chatUsers.GetUsers.Where(x => x.TelegramCode == 1).Count();
             }
-            var bot = new TelegramBotClient("6119932961:AAFQ2-JsIOnAS7-khwx8Chhu8JolUiiYnnU");
+            var bot = new TelegramBotClient("5864890772:AAE5AEVouqCRX6AyBbo26PzPHiJwT9tUmfA");
             Console.WriteLine("Запущен бот " + bot.GetMeAsync().Result.FirstName);
 
             var cancellationToken = new CancellationTokenSource().Token;
@@ -37,11 +37,11 @@ namespace TelegramBotExperiments
         }
         public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            var datemes = DateTime.Now - (update.Message.Date.AddHours(3));
-            if (update.Type == UpdateType.Message && datemes.Seconds < 5)
+            if (update.Type == UpdateType.Message)
             {
                 var message = update.Message;
-                if (!string.IsNullOrWhiteSpace(message.Text))
+                var datemes = DateTime.Now - (message.Date.AddHours(3));
+                if (!string.IsNullOrWhiteSpace(message.Text) && datemes.Seconds < 5)
                 {
                     using (ChatUsersContext chatUsers = new ChatUsersContext())
                     {
@@ -79,6 +79,14 @@ namespace TelegramBotExperiments
                                     if (buttonType == 1)
                                     {
                                         users.Choice = message.Text;
+                                        if (message.Text == "С удовольствием буду!")
+                                        {
+                                            await botClient.SendStickerAsync(message.Chat, new Telegram.Bot.Types.InputFiles.InputOnlineFile("CAACAgIAAxkBAAEIgbNkMWRFsx0B7YYl5uo2CYIsvujvbwACBAEAAladvQreBNF6Zmb3bC8E"));
+                                        }
+                                        else
+                                        {
+                                            await botClient.SendStickerAsync(message.Chat, new Telegram.Bot.Types.InputFiles.InputOnlineFile("CAACAgIAAxkBAAEIgbFkMWRD_bmCyDcIcVIAAQyCpPkewjMAAvsAA1advQpWDtsz28rJ5i8E"));
+                                        }
                                     }
                                     users.IdChatPosition = (int)chatUsers.GetChatPositions.Where(x => x.Id == users.IdChatPosition).Select(x => x.ParentId).First();
                                 }
@@ -88,11 +96,11 @@ namespace TelegramBotExperiments
                                 }
                                 else if (buttonType == 2)
                                 {
-                                    users.Alcohol = users.Alcohol + ", " + message.From.Id;
+                                    users.Alcohol = users.Alcohol + ", " + message.Text;
                                 }
                                 else if (buttonType == 3)
                                 {
-                                    users.Food = users.Food + ", " + message.From.Id;
+                                    users.Food = users.Food + ", " + message.Text;
                                 }
                             }
                             else
@@ -114,9 +122,26 @@ namespace TelegramBotExperiments
         {
             int? idMessage = chatUsers.GetChatPositions.Where(x => x.Id == user.IdChatPosition).Select(x => x.IdMessageText).First();
             string messageText = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.Text).First();
+
+            string imageUrl = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.ImageUrl).First();
+            double? FirstLatitude = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.FirstLatitude).First();
+            double? FirstLongitude = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.FirstLongitude).First();
+            double? SecondLatitude = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.SecondLatitude).First();
+            double? SecondLongitude = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.SecondLongitude).First();
+
             IReplyMarkup replyKeyboardMarkups = Keyboard.Get(chatUsers, user);
 
             botClient.SendTextMessageAsync(message.Chat, messageText, replyMarkup: replyKeyboardMarkups);
+
+            if (imageUrl != null)
+            {
+                botClient.SendPhotoAsync(message.Chat, imageUrl);
+            }
+            if (FirstLatitude != null)
+            {
+                botClient.SendLocationAsync(message.Chat, (double) FirstLatitude, (double) FirstLongitude);
+                botClient.SendLocationAsync(message.Chat, (double) SecondLatitude, (double) SecondLongitude);
+            }
 
             chatUsers.GetUsers.AddOrUpdate(user);
             chatUsers.SaveChanges();

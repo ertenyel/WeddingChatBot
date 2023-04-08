@@ -37,20 +37,24 @@ namespace WeddingChatBot
                 List<string> buttons = db.GetButtons.Where(x => x.IdMessage == idButtons).Select(x => x.Text).ToList();
                 List<KeyboardButton> tempKeyboards = new List<KeyboardButton>();
 
-                int iStartPos = 0;
-                for (int i = 0; i < buttons.Count; i++)
+                foreach (string button in buttons)
                 {
-                    tempKeyboards.Add(new KeyboardButton(buttons[i]));
-                    if (i == iStartPos + 1)
-                    {
-                        keyboardButtons.Add(tempKeyboards);
-                        tempKeyboards = new List<KeyboardButton>();
-                        iStartPos = i + 1;
-                    }
-
-                    if (i == buttons.Count - 1 && tempKeyboards.Count > 0)
-                        keyboardButtons.Add(tempKeyboards);
+                    keyboardButtons.Add(new List<KeyboardButton>() { new KeyboardButton(button) });
                 }
+                //int iStartPos = 0;
+                //for (int i = 0; i < buttons.Count; i++)
+                //{
+                //    tempKeyboards.Add(new KeyboardButton(buttons[i]));
+                //    if (i == iStartPos + 1)
+                //    {
+                //        keyboardButtons.Add(tempKeyboards);
+                //        tempKeyboards = new List<KeyboardButton>();
+                //        iStartPos = i + 1;
+                //    }
+
+                //    if (i == buttons.Count - 1 && tempKeyboards.Count > 0)
+                //        keyboardButtons.Add(tempKeyboards);
+                //}
             }
 
             return keyboardButtons;
