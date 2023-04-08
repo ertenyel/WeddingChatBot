@@ -74,6 +74,7 @@
     <Compile Include="DataModel\Button.cs" />
     <Compile Include="DataModel\ChatPosition.cs" />
     <Compile Include="DataModel\TextInMessage.cs" />
+    <Compile Include="Keyboard.cs" />
     <Compile Include="TextButtons\OtherButtons.cs" />
     <Compile Include="TextButtons\UserInfoButtons.cs" />
     <Compile Include="TextButtons\InfoEventButtons.cs" />
