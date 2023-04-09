@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.Migrations;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -143,14 +140,15 @@ namespace TelegramBotExperiments
         public static void BotAnswer(Message message, ITelegramBotClient botClient, ChatUsersContext chatUsers, WeddingChatBot.DataModel.User user)
         {
             int? idMessage = chatUsers.GetChatPositions.Where(x => x.Id == user.IdChatPosition).Select(x => x.IdMessageText).First();
-            var textEntry = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => new 
-            { 
-                x.Text, 
-                x.ImageUrl, 
-                x.FirstLatitude, 
-                x.FirstLongitude, 
-                x.SecondLatitude, 
-                x.SecondLongitude}).First();
+            var textEntry = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => new
+            {
+                x.Text,
+                x.ImageUrl,
+                x.FirstLatitude,
+                x.FirstLongitude,
+                x.SecondLatitude,
+                x.SecondLongitude
+            }).First();
 
             IReplyMarkup replyKeyboardMarkups = Keyboard.Get(chatUsers, user);
             botClient.SendTextMessageAsync(message.Chat, textEntry.Text, replyMarkup: replyKeyboardMarkups);
@@ -164,16 +162,16 @@ namespace TelegramBotExperiments
 
                     if (album != null)
                         botClient.SendMediaGroupAsync(message.Chat, album);
-                    
+
                     Thread.Sleep(1000);
                 }
             }
             if (textEntry.FirstLatitude != null)
             {
                 Thread.Sleep(500);
-                botClient.SendLocationAsync(message.Chat, (double) textEntry.FirstLatitude, (double) textEntry.FirstLongitude);
+                botClient.SendLocationAsync(message.Chat, (double)textEntry.FirstLatitude, (double)textEntry.FirstLongitude);
                 Thread.Sleep(500);
-                botClient.SendLocationAsync(message.Chat, (double) textEntry.SecondLatitude, (double) textEntry.SecondLongitude);
+                botClient.SendLocationAsync(message.Chat, (double)textEntry.SecondLatitude, (double)textEntry.SecondLongitude);
             }
 
             chatUsers.GetUsers.AddOrUpdate(user);
