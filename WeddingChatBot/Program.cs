@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.Migrations;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
-//using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -33,6 +36,7 @@ namespace TelegramBotExperiments
                 receiverOptions,
                 cancellationToken
             );
+
             Console.ReadLine();
         }
         public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -46,6 +50,7 @@ namespace TelegramBotExperiments
                     using (ChatUsersContext chatUsers = new ChatUsersContext())
                     {
                         WeddingChatBot.DataModel.User users;
+
                         int mainPosId = chatUsers.GetChatPositions.Where(x => x.Name == "main").Select(x => x.Id).First();
 
                         if (chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).Count() == 0)
@@ -61,6 +66,7 @@ namespace TelegramBotExperiments
                         else
                         {
                             users = chatUsers.GetUsers.Where(x => x.TelegramCode == message.From.Id).First();
+
                             if (message.Text.ToLower() == "/start")
                             {
                                 Console.WriteLine($"{message.From.FirstName} {message.From.LastName}: {message.Text}; {message.Date}");
@@ -68,45 +74,57 @@ namespace TelegramBotExperiments
                             }
                             else if (chatUsers.GetButtons.Where(x => x.Text == message.Text).Count() > 0)
                             {
-                                int? newIdChatPosition = chatUsers.GetButtons.Where(x => x.Text == message.Text).Select(x => x.CalledChatPosition).First();
-                                int? buttonType = chatUsers.GetButtons.Where(x => x.Text == message.Text).Select(x => x.ButtonType).First();
-                                if (buttonType == 0)
+                                var button = chatUsers.GetButtons.Where(x => x.Text == message.Text).Select(x => new { x.CalledChatPosition, x.ButtonType }).First();
+
+                                if (button.ButtonType == 0)
                                 {
-                                    users.IdChatPosition = (int)newIdChatPosition;
+                                    users.IdChatPosition = (int)button.CalledChatPosition;
                                 }
-                                else if (buttonType == 4 || buttonType == 1)
+                                else if (button.ButtonType == 4 || button.ButtonType == 1 || users.IdChatPosition == 9)
                                 {
-                                    if (buttonType == 1)
+                                    if (button.ButtonType == 1)
                                     {
                                         users.Choice = message.Text;
-                                        if (message.Text == "С удовольствием буду!")
-                                        {
-                                            await botClient.SendStickerAsync(message.Chat, new Telegram.Bot.Types.InputFiles.InputOnlineFile("CAACAgIAAxkBAAEIgbNkMWRFsx0B7YYl5uo2CYIsvujvbwACBAEAAladvQreBNF6Zmb3bC8E"));
-                                        }
+                                        string stickerId;
+                                        if (message.Text == "С удовольствием буду!✅")
+                                            stickerId = "CAACAgIAAxkBAAEIgbNkMWRFsx0B7YYl5uo2CYIsvujvbwACBAEAAladvQreBNF6Zmb3bC8E";
                                         else
-                                        {
-                                            await botClient.SendStickerAsync(message.Chat, new Telegram.Bot.Types.InputFiles.InputOnlineFile("CAACAgIAAxkBAAEIgbFkMWRD_bmCyDcIcVIAAQyCpPkewjMAAvsAA1advQpWDtsz28rJ5i8E"));
-                                        }
+                                            stickerId = "CAACAgIAAxkBAAEIgbFkMWRD_bmCyDcIcVIAAQyCpPkewjMAAvsAA1advQpWDtsz28rJ5i8E";
+
+                                        await botClient.SendStickerAsync(message.Chat, new Telegram.Bot.Types.InputFiles.InputOnlineFile(stickerId));
                                     }
                                     users.IdChatPosition = (int)chatUsers.GetChatPositions.Where(x => x.Id == users.IdChatPosition).Select(x => x.ParentId).First();
                                 }
-                                else if (buttonType == 5)
+                                else if (button.ButtonType == 5)
                                 {
                                     users.IdChatPosition = mainPosId;
                                 }
-                                else if (buttonType == 2)
+                                else if (button.ButtonType == 2)
                                 {
                                     users.Alcohol = users.Alcohol + ", " + message.Text;
                                 }
-                                else if (buttonType == 3)
+                                else if (button.ButtonType == 3)
                                 {
                                     users.Food = users.Food + ", " + message.Text;
                                 }
                             }
+                            else if (users.IdChatPosition == 3)
+                            {
+                                users.Companion = message.Text;
+                                users.IdChatPosition = (int)chatUsers.GetChatPositions.Where(x => x.Id == users.IdChatPosition).Select(x => x.ParentId).First();
+                                await botClient.SendStickerAsync(message.Chat, new Telegram.Bot.Types.InputFiles.InputOnlineFile("CAACAgIAAxkBAAEIhIZkMpDO0FWA9M5OJtbwf2IuuCWXDQAC_gADVp29CtoEYTAu-df_LwQ"));
+                            }
                             else
                             {
+                                await botClient.SendStickerAsync(message.Chat, new Telegram.Bot.Types.InputFiles.InputOnlineFile("CAACAgIAAxkBAAEIhIpkMpEvvyN7LkBroSNctShjS8ylLAAC-QADVp29CpVlbqsqKxs2LwQ"));
                                 return;
                             }
+                        }
+
+                        if (users.IdChatPosition == mainPosId
+                                && users.Companion != null && users.Alcohol != null && users.Choice != null && users.Food != null)
+                        {
+                            await botClient.SendTextMessageAsync(message.Chat, $"Поздравляем, {users.Name}!\nУ вас заполнена вся анкета!\nЕсли вы хотите что-нибудь изменить, то используйте меню бота снова.");
                         }
 
                         chatUsers.GetUsers.AddOrUpdate(users);
@@ -121,26 +139,37 @@ namespace TelegramBotExperiments
         public static void BotAnswer(Message message, ITelegramBotClient botClient, ChatUsersContext chatUsers, WeddingChatBot.DataModel.User user)
         {
             int? idMessage = chatUsers.GetChatPositions.Where(x => x.Id == user.IdChatPosition).Select(x => x.IdMessageText).First();
-            string messageText = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.Text).First();
-
-            string imageUrl = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.ImageUrl).First();
-            double? FirstLatitude = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.FirstLatitude).First();
-            double? FirstLongitude = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.FirstLongitude).First();
-            double? SecondLatitude = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.SecondLatitude).First();
-            double? SecondLongitude = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => x.SecondLongitude).First();
+            var textEntry = chatUsers.GetTextsInMessage.Where(x => x.Id == idMessage).Select(x => new 
+            { 
+                x.Text, 
+                x.ImageUrl, 
+                x.FirstLatitude, 
+                x.FirstLongitude, 
+                x.SecondLatitude, 
+                x.SecondLongitude}).First();
 
             IReplyMarkup replyKeyboardMarkups = Keyboard.Get(chatUsers, user);
+            botClient.SendTextMessageAsync(message.Chat, textEntry.Text, replyMarkup: replyKeyboardMarkups);
 
-            botClient.SendTextMessageAsync(message.Chat, messageText, replyMarkup: replyKeyboardMarkups);
-
-            if (imageUrl != null)
+            if (textEntry.ImageUrl != null)
             {
-                botClient.SendPhotoAsync(message.Chat, imageUrl);
+                Thread.Sleep(500);
+                using (Media photos = new Media())
+                {
+                    List<InputMediaPhoto> album = photos.GetAlbumPhotos(textEntry.ImageUrl);
+
+                    if (album != null)
+                        botClient.SendMediaGroupAsync(message.Chat, album);
+                    
+                    Thread.Sleep(1000);
+                }
             }
-            if (FirstLatitude != null)
+            if (textEntry.FirstLatitude != null)
             {
-                botClient.SendLocationAsync(message.Chat, (double) FirstLatitude, (double) FirstLongitude);
-                botClient.SendLocationAsync(message.Chat, (double) SecondLatitude, (double) SecondLongitude);
+                Thread.Sleep(500);
+                botClient.SendLocationAsync(message.Chat, (double) textEntry.FirstLatitude, (double) textEntry.FirstLongitude);
+                Thread.Sleep(500);
+                botClient.SendLocationAsync(message.Chat, (double) textEntry.SecondLatitude, (double) textEntry.SecondLongitude);
             }
 
             chatUsers.GetUsers.AddOrUpdate(user);
