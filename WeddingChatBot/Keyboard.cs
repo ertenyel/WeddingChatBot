@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
 using WeddingChatBot.DataModel;
 
@@ -39,22 +36,14 @@ namespace WeddingChatBot
 
                 foreach (string button in buttons)
                 {
-                    keyboardButtons.Add(new List<KeyboardButton>() { new KeyboardButton(button) });
-                }
-                //int iStartPos = 0;
-                //for (int i = 0; i < buttons.Count; i++)
-                //{
-                //    tempKeyboards.Add(new KeyboardButton(buttons[i]));
-                //    if (i == iStartPos + 1)
-                //    {
-                //        keyboardButtons.Add(tempKeyboards);
-                //        tempKeyboards = new List<KeyboardButton>();
-                //        iStartPos = i + 1;
-                //    }
+                    if (user.Alcohol == null)
+                        user.Alcohol = string.Empty;
+                    if (user.Food == null)
+                        user.Food = string.Empty;
 
-                //    if (i == buttons.Count - 1 && tempKeyboards.Count > 0)
-                //        keyboardButtons.Add(tempKeyboards);
-                //}
+                    if (!user.Alcohol.Contains(button) && !user.Food.Contains(button))
+                        keyboardButtons.Add(new List<KeyboardButton>() { new KeyboardButton(button) });
+                }
             }
 
             return keyboardButtons;

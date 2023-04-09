@@ -72,6 +72,10 @@ namespace TelegramBotExperiments
                                 Console.WriteLine($"{message.From.FirstName} {message.From.LastName}: {message.Text}; {message.Date}");
                                 users.IdChatPosition = mainPosId;
                             }
+                            else if (message.Text.ToLower() == "/clear")
+                            {
+                                users.Companion = users.Alcohol = users.Choice = users.Food = null;
+                            }
                             else if (chatUsers.GetButtons.Where(x => x.Text == message.Text).Count() > 0)
                             {
                                 var button = chatUsers.GetButtons.Where(x => x.Text == message.Text).Select(x => new { x.CalledChatPosition, x.ButtonType }).First();
@@ -108,7 +112,7 @@ namespace TelegramBotExperiments
                                     users.Food = users.Food + ", " + message.Text;
                                 }
                             }
-                            else if (users.IdChatPosition == 3)
+                            else if (users.IdChatPosition == 9)
                             {
                                 users.Companion = message.Text;
                                 users.IdChatPosition = (int)chatUsers.GetChatPositions.Where(x => x.Id == users.IdChatPosition).Select(x => x.ParentId).First();
@@ -121,8 +125,8 @@ namespace TelegramBotExperiments
                             }
                         }
 
-                        if (users.IdChatPosition == mainPosId
-                                && users.Companion != null && users.Alcohol != null && users.Choice != null && users.Food != null)
+                        if (users.IdChatPosition == 3
+                                && !string.IsNullOrWhiteSpace(users.Companion) && !string.IsNullOrWhiteSpace(users.Alcohol) && !string.IsNullOrWhiteSpace(users.Choice) && !string.IsNullOrWhiteSpace(users.Food))
                         {
                             await botClient.SendTextMessageAsync(message.Chat, $"Поздравляем, {users.Name}!\nУ вас заполнена вся анкета!\nЕсли вы хотите что-нибудь изменить, то используйте меню бота снова.");
                         }
