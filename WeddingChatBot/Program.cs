@@ -18,10 +18,6 @@ namespace TelegramBotExperiments
     {
         static void Main(string[] args)
         {
-            using (ChatUsersContext chatUsers = new ChatUsersContext())
-            {
-                chatUsers.GetUsers.Where(x => x.TelegramCode == 1).Count();
-            }
             var bot = new TelegramBotClient("5864890772:AAE5AEVouqCRX6AyBbo26PzPHiJwT9tUmfA");
             Console.WriteLine("Запущен бот " + bot.GetMeAsync().Result.FirstName);
 
@@ -118,6 +114,7 @@ namespace TelegramBotExperiments
                             else
                             {
                                 await botClient.SendStickerAsync(message.Chat, new Telegram.Bot.Types.InputFiles.InputOnlineFile("CAACAgIAAxkBAAEIhIpkMpEvvyN7LkBroSNctShjS8ylLAAC-QADVp29CpVlbqsqKxs2LwQ"));
+                                await botClient.SendTextMessageAsync(message.Chat, "Я не понимаю, что вы говорите.\nНеобходимо использовать клавиши внизу");
                                 return;
                             }
                         }
