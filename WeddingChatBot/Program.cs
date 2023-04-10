@@ -18,7 +18,7 @@ namespace TelegramBotExperiments
     {
         static void Main(string[] args)
         {
-            var bot = new TelegramBotClient("5864890772:AAE5AEVouqCRX6AyBbo26PzPHiJwT9tUmfA");
+            var bot = new TelegramBotClient("apikey");
             Console.WriteLine("Запущен бот " + bot.GetMeAsync().Result.FirstName);
 
             var cancellationToken = new CancellationTokenSource().Token;
