@@ -71,18 +71,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Answer.cs" />
-    <Compile Include="AnswerKey.cs" />
+    <Compile Include="DataModel\Button.cs" />
+    <Compile Include="DataModel\ChatPosition.cs" />
+    <Compile Include="DataModel\TextInMessage.cs" />
+    <Compile Include="Keyboard.cs" />
     <Compile Include="DataModel\ChatUsersContext.cs" />
-    <Compile Include="DataModel\Users.cs" />
+    <Compile Include="DataModel\User.cs" />
+    <Compile Include="Media.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MessageTexts.cs" />
-    <Compile Include="Buttons.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="InitialData.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
